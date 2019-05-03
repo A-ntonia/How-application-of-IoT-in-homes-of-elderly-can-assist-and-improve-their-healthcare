@@ -1,0 +1,72 @@
+#include <dht.h>
+#include <LiquidCrystal.h>
+
+dht DHT;
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //lcd pins connected to elegoo 
+int tdDelay=8000; //humidity delay
+#define DHT11_PIN 13 //which pin dht connected to
+
+int redLED=8; //tells red LED is connected to 12
+int redOnTime=1000; //tells how long red LED on for
+int redOffTime=200; //tells how long red LED off
+int numRedBlinks=5;
+int tooHigh=28; //temp will light LED
+
+int buzzer =7; 
+
+int tooLow=10; //buzzer will work
+
+void setup(){
+  Serial.begin(9600);
+  
+  lcd.begin(16,2); //size of lcd
+  lcd.setCursor(5,0); //where hello will appear
+  lcd.print("Hello!"); 
+  delay(2000);
+  
+   pinMode(redLED,OUTPUT);
+   
+   pinMode(buzzer,OUTPUT);
+}
+
+void loop()
+{
+  //source code for DHT11 sensor taken from: Circuit Basics (n.d.), How to set up the DHT 11 sensor on an Arduino [online]. Available at: http://www.circuitbasics.com/how-to-set-up-the-dht11-humidity-sensor-on-an-arduino/ [Accessed: 30/04/19]
+  int chk = DHT.read11(DHT11_PIN); //reads DHT
+  Serial.print("Temperature = "); 
+  Serial.println(DHT.temperature); 
+  Serial.print("Humidity = "); 
+  Serial.println(DHT.humidity);
+  delay(1000); 
+
+ //source code for LCD display taken from: Circuit Basics (n.d.), How to set up the DHT 11 sensor on an Arduino [online]. Available at: http://www.circuitbasics.com/how-to-set-up-the-dht11-humidity-sensor-on-an-arduino/ [Accessed: 30/04/19]
+  lcd.setCursor(1,0); //for temp display
+  lcd.print("Temp:  "); lcd.print(DHT.temperature); lcd.print(" C"); lcd.print(char(223)); //displays string, temp, string and symbol for degrees.
+  lcd.setCursor(1,1); //for humidity display
+  lcd.print("Humidity: "); lcd.print((int)DHT.humidity); lcd.print(" %"); //displays string and humidity
+  delay(tdDelay); //wait
+  lcd.clear(); //clears display for next loop
+
+  //source code for LED taken from: Paul McWhorter (2014), Arduino Lesson 3: For loops for simple led circuit [online]. Avaiable at: http://www.toptechboy.com/arduino/arduino-lesson-3-simple-led-circuit/ [Accessed: 30/04/2019].
+   if(DHT.temperature>=tooHigh)  {
+    digitalWrite(redLED, HIGH); //turns red LED on
+    delay(redOnTime); //wait
+    digitalWrite(redLED,LOW); //turns red LED off
+    delay(redOffTime); //wait
+  }
+  else{
+    digitalWrite(redLED,LOW); //if temp not tooHigh then LED not come on
+  }
+
+  //source code for buzzer taken from: elegoo code 
+  if(DHT.temperature<=tooLow){
+    digitalWrite(buzzer,HIGH);
+    delay(2000);
+    digitalWrite(buzzer,LOW);
+    delay(1000);
+}
+else{
+  digitalWrite(buzzer,LOW);
+}
+}
